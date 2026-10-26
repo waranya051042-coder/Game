@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Verb to Be Adventure: ผจญภัยพิชิต 10 ด่าน | ป.4</title>
+  <meta name="description" content="เกมการศึกษาออนไลน์ Verb to Be Adventure สำหรับนักเรียนชั้นประถมศึกษาปีที่ 4 ผจญภัยผ่าน 10 ด่านป่ามหัศจรรย์">
+
+  <!-- Google Fonts: Prompt & Fredoka -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- 3D WebGL Canvas Container -->
+  <div id="game-canvas-container"></div>
+
+  <!-- Ambient FX Layer -->
+  <canvas id="fx-canvas"></canvas>
+
+  <!-- ================= TOP HUD ================= -->
+  <header id="hud" class="hud-container hidden">
+    <!-- Left: Player Profile Pill -->
+    <div class="hud-left">
+      <div class="player-pill">
+        <div class="avatar-circle">
+          <i class="fa-solid fa-compass"></i>
+        </div>
+        <div class="player-info">
+          <span id="hud-player-name" class="p-name">นักผจญภัย</span>
+          <span id="hud-player-class" class="p-class">ป.4/1 • เลขที่ 01</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center: Stage Progress Tracker -->
+    <div class="hud-center">
+      <div class="stage-banner">
+        <span id="stage-badge" class="stage-badge">ด่าน 1 / 10</span>
+        <h2 id="stage-title" class="stage-title">🌳 ป่ามหัศจรรย์</h2>
+      </div>
+      <div class="progress-track-wrapper">
+        <div class="progress-bar-bg">
+          <div id="progress-bar-fill" class="progress-bar-fill" style="width: 10%;"></div>
+        </div>
+        <div class="stage-dots" id="stage-dots-container">
+          <!-- 10 dots injected by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Score & Control Icons -->
+    <div class="hud-right">
+      <div class="stat-pill score-pill">
+        <i class="fa-solid fa-star star-icon"></i>
+        <div class="stat-content">
+          <span class="stat-label">คะแนน</span>
+          <span id="hud-score" class="stat-value">0</span>
+          <span class="stat-max">/ 100</span>
+        </div>
+      </div>
+      <div class="controls-pill">
+        <button id="btn-audio-toggle" class="icon-btn" title="เปิด/ปิดเสียง" aria-label="Toggle Sound">
+          <i class="fa-solid fa-volume-high" id="audio-icon"></i>
+        </button>
+        <button id="btn-leaderboard-open" class="icon-btn" title="ตารางอันดับ" aria-label="Leaderboard">
+          <i class="fa-solid fa-trophy"></i>
+        </button>
+        <button id="btn-help-open" class="icon-btn" title="คู่มือไวยากรณ์" aria-label="Grammar Guide">
+          <i class="fa-solid fa-book-open"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Floating Stage Objective Tooltip -->
+  <div id="objective-banner" class="objective-banner hidden">
+    <i class="fa-solid fa-person-walking-arrow-right"></i>
+    <span>วิ่งไปที่ <strong>ซุ้มประตูเวทมนตร์</strong> ด้านหน้าเพื่อตอบคำถาม!</span>
+  </div>
+
+  <!-- ================= MOBILE CONTROLS ================= -->
+  <div id="mobile-controls" class="mobile-controls-overlay">
+    <div id="joystick-zone" class="joystick-zone">
+      <div id="joystick-base" class="joystick-base">
+        <div id="joystick-thumb" class="joystick-thumb"></div>
+      </div>
+    </div>
+    <div class="mobile-action-buttons">
+      <button id="btn-mobile-jump" class="mobile-btn jump-btn" aria-label="Jump">
+        <i class="fa-solid fa-arrow-up"></i>
+        <span>กระโดด</span>
+      </button>
+      <button id="btn-mobile-run" class="mobile-btn run-btn" aria-label="Run">
+        <i class="fa-solid fa-bolt"></i>
+        <span>วิ่งเร็ว</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: START & REGISTRATION ================= -->
+  <div id="modal-start" class="modal-backdrop active">
+    <div class="modal-card cartoon-card welcome-card">
+      <div class="title-header">
+        <div class="game-logo-badge">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+        </div>
+        <h1 class="main-title">Verb to Be Adventure</h1>
+        <p class="subtitle">ผจญภัยพิชิต 10 ด่าน (ชั้น ป.4)</p>
+      </div>
+
+      <div class="story-box">
+        <p>🌲 <strong>การผจญภัยเริ่มต้นขึ้นแล้ว!</strong> เดินทางผ่าน 10 ด่านในป่ามหัศจรรย์ เลือกใช้ <strong>am / is / are</strong> ให้ถูกต้องครบ 10 ด่านรวดเพื่อรับถ้วยรางวัลเกียรติยศและประกาศนียบัตรดิจิทัล 100 คะแนนเต็ม!</p>
+        <div class="rule-warning">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span><strong>กติกาสำคัญ:</strong> หากตอบผิด จะแสดงเฉลยทันที แล้วตัวละครจะถูกส่งกลับไปเริ่มด่านที่ 1 และคะแนนรอบปัจจุบันจะกลายเป็น 0</span>
+        </div>
+      </div>
+
+      <form id="form-register" class="register-form" onsubmit="return false;">
+        <div class="form-group">
+          <label for="input-player-name"><i class="fa-solid fa-user-astronaut"></i> ชื่อ - นามสกุล นักเรียน</label>
+          <input type="text" id="input-player-name" placeholder="เช่น ด.ช. กิตติภพ รักการเรียน" required autocomplete="name">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group half">
+            <label for="input-player-class"><i class="fa-solid fa-school"></i> ระดับชั้น</label>
+            <select id="input-player-class" required>
+              <option value="ป.4/1">ป.4/1</option>
+              <option value="ป.4/2">ป.4/2</option>
+              <option value="ป.4/3">ป.4/3</option>
+              <option value="ป.4/4">ป.4/4</option>
+              <option value="ป.4/5">ป.4/5</option>
+              <option value="ป.4/6">ป.4/6</option>
+            </select>
+          </div>
+          <div class="form-group half">
+            <label for="input-player-no"><i class="fa-solid fa-list-ol"></i> เลขที่</label>
+            <input type="number" id="input-player-no" min="1" max="60" placeholder="เช่น 01" required>
+          </div>
+        </div>
+
+        <div class="control-hints-box">
+          <div class="hint-item"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> หรือ ลูกศร : บังคับเดิน</div>
+          <div class="hint-item"><kbd>Space</kbd> : กระโดด | <kbd>Shift</kbd> : วิ่งเร็ว</div>
+          <div class="hint-item"><i class="fa-solid fa-mobile-screen"></i> บนมือถือ : ใช้นิ้วเลื่อนจอยสติ๊กด้านซ้ายล่าง</div>
+        </div>
+
+        <button type="submit" id="btn-start-game" class="btn-primary-3d">
+          <span>เริ่มการผจญภัยทันที!</span>
+          <i class="fa-solid fa-play"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: QUESTION DIALOG ================= -->
+  <div id="modal-question" class="modal-backdrop">
+    <div class="modal-card cartoon-card question-card">
+      <div class="question-header">
+        <div class="q-badge" id="q-stage-badge">ด่านที่ 1 : ป่ามหัศจรรย์</div>
+        <div class="q-points-badge">+10 คะแนน</div>
+      </div>
+
+      <div class="question-body">
+        <div class="question-scene-avatar" id="q-biome-icon">🌳</div>
+        <p class="question-instruction">เลือก <strong>Verb to Be</strong> ที่ถูกต้องเพื่อเติมในประโยค:</p>
+        
+        <div class="sentence-box">
+          <span id="q-sentence-text" class="sentence-text">I <span class="blank-slot">___</span> a student.</span>
+        </div>
+      </div>
+
+      <div class="choices-grid">
+        <button class="choice-btn" data-choice="am" id="choice-btn-am">
+          <span class="choice-tag">A</span>
+          <span class="choice-text">am</span>
+        </button>
+        <button class="choice-btn" data-choice="is" id="choice-btn-is">
+          <span class="choice-tag">B</span>
+          <span class="choice-text">is</span>
+        </button>
+        <button class="choice-btn" data-choice="are" id="choice-btn-are">
+          <span class="choice-tag">C</span>
+          <span class="choice-text">are</span>
+        </button>
+      </div>
+
+      <div class="question-footer">
+        <span class="tip-text"><i class="fa-regular fa-lightbulb"></i> ข้อควรจำ: สังเกตว่าประธานเป็นคนเดียว (เอกพจน์) หรือหลายคน (พหูพจน์)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: FEEDBACK (CORRECT / WRONG) ================= -->
+  <div id="modal-feedback" class="modal-backdrop">
+    <div class="modal-card cartoon-card feedback-card" id="feedback-card">
+      <div id="feedback-icon" class="feedback-icon-wrapper">
+        <!-- Icon injected by JS -->
+      </div>
+      <h2 id="feedback-title" class="feedback-title">เก่งมาก! ตอบถูกต้อง</h2>
+      <p id="feedback-subtitle" class="feedback-subtitle">ประธาน I ใช้คู่กับ am</p>
+      
+      <div id="feedback-explanation-box" class="explanation-box">
+        <!-- Explanation content -->
+      </div>
+
+      <div id="feedback-action-box" class="feedback-action-box">
+        <button id="btn-feedback-action" class="btn-primary-3d">
+          <span id="btn-feedback-text">ลุยด่านถัดไป!</span>
+          <i class="fa-solid fa-arrow-right" id="btn-feedback-icon"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: VICTORY & DIGITAL CERTIFICATE ================= -->
+  <div id="modal-victory" class="modal-backdrop">
+    <div class="modal-card cartoon-card victory-card">
+      <div class="victory-header">
+        <div class="trophy-glow">
+          <i class="fa-solid fa-trophy main-trophy"></i>
+        </div>
+        <h1 class="victory-title">🎉 ยินดีด้วย ผู้พิชิตทั้ง 10 ด่าน! 🎉</h1>
+        <p class="victory-sub">คุณผ่านครบทั้ง 10 ด่านติดต่อกันโดยไม่ตอบผิด ได้คะแนนเต็ม 100/100</p>
+      </div>
+
+      <!-- Printable Certificate Box -->
+      <div class="certificate-container" id="printable-certificate">
+        <div class="cert-border-outer">
+          <div class="cert-border-inner">
+            <div class="cert-watermark">⭐</div>
+            <div class="cert-header">
+              <div class="cert-badge">🏅 เกียรติบัตรเรียนรู้ออนไลน์</div>
+              <h2 class="cert-school">Verb to Be Adventure: ผจญภัยพิชิต 10 ด่าน</h2>
+              <p class="cert-award-to">ขอมอบประกาศนียบัตรฉบับนี้เพื่อแสดงว่า</p>
+            </div>
+
+            <div class="cert-student-name" id="cert-name">เด็กชาย กิตติภพ รักการเรียน</div>
+            <div class="cert-student-meta" id="cert-meta">ชั้นประถมศึกษาปีที่ 4/1 • เลขที่ 01</div>
+
+            <div class="cert-desc">
+              ได้ผ่านการทดสอบทักษะการใช้ไวยากรณ์ <strong>Verb to Be (am, is, are)</strong><br>
+              ครบทั้ง 10 ด่านในดินแดนมหัศจรรย์ติดต่อกันได้อย่างถูกต้องสมบูรณ์แบบ
+            </div>
+
+            <div class="cert-score-seal">
+              <div class="seal-circle">
+                <span class="seal-score">100</span>
+                <span class="seal-label">คะแนนเต็ม</span>
+              </div>
+            </div>
+
+            <div class="cert-footer">
+              <div class="cert-sign">
+                <div class="sign-line"></div>
+                <div class="sign-title">กลุ่มสาระการเรียนรู้ภาษาต่างประเทศ ชั้น ป.4</div>
+                <div class="cert-date" id="cert-date">วันที่ 26 ตุลาคม 2569</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Victory Actions -->
+      <div class="victory-actions">
+        <button id="btn-print-cert" class="btn-secondary-3d">
+          <i class="fa-solid fa-print"></i>
+          <span>พิมพ์ / บันทึกประกาศนียบัตร (PDF)</span>
+        </button>
+        <button id="btn-play-again" class="btn-accent-3d">
+          <i class="fa-solid fa-rotate-right"></i>
+          <span>เล่นผจญภัยใหม่อีกครั้ง</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: LEADERBOARD ================= -->
+  <div id="modal-leaderboard" class="modal-backdrop">
+    <div class="modal-card cartoon-card leaderboard-card">
+      <div class="lb-header">
+        <div class="lb-icon"><i class="fa-solid fa-award"></i></div>
+        <h2>ตารางอันดับผู้เล่น (Leaderboard)</h2>
+        <button id="btn-lb-close" class="modal-close-btn" aria-label="Close">&times;</button>
+      </div>
+
+      <div class="lb-table-wrapper">
+        <table class="lb-table">
+          <thead>
+            <tr>
+              <th>อันดับ</th>
+              <th>ชื่อ - นามสกุล</th>
+              <th>ชั้น</th>
+              <th>เลขที่</th>
+              <th>คะแนน</th>
+              <th>ด่านที่ไปถึง</th>
+              <th>สถานะ</th>
+            </tr>
+          </thead>
+          <tbody id="lb-table-body">
+            <tr>
+              <td colspan="7" class="lb-loading">กำลังโหลดข้อมูลอันดับจาก Google Sheets...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="lb-footer">
+        <button id="btn-refresh-lb" class="btn-secondary-3d btn-small">
+          <i class="fa-solid fa-arrows-rotate"></i> รีเฟรชอันดับ
+        </button>
+        <button id="btn-lb-ok" class="btn-primary-3d btn-small">
+          <span>ปิด</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: GRAMMAR HELP GUIDE ================= -->
+  <div id="modal-help" class="modal-backdrop">
+    <div class="modal-card cartoon-card help-card">
+      <div class="lb-header">
+        <div class="lb-icon"><i class="fa-solid fa-book-open"></i></div>
+        <h2>สรุปหลักไวยากรณ์ Verb to Be (ป.4)</h2>
+        <button id="btn-help-close" class="modal-close-btn" aria-label="Close">&times;</button>
+      </div>
+
+      <div class="help-content">
+        <h3>✨ กฎการใช้ Verb to Be (am / is / are)</h3>
+        <div class="grammar-rule-cards">
+          <div class="g-card g-am">
+            <h4>am</h4>
+            <p>ใช้กับประธาน <strong>I</strong> (ฉัน) เพียงตัวเดียวเท่านั้น</p>
+            <div class="example">I <strong>am</strong> a student.</div>
+          </div>
+          <div class="g-card g-is">
+            <h4>is</h4>
+            <p>ใช้กับประธาน <strong>เอกพจน์ (1 คน/1 สิ่ง)</strong> เช่น He, She, It, My mother</p>
+            <div class="example">She <strong>is</strong> my sister.</div>
+          </div>
+          <div class="g-card g-are">
+            <h4>are</h4>
+            <p>ใช้กับประธาน <strong>พหูพจน์ (หลายคน/หลายสิ่ง)</strong> และ <strong>You</strong> เช่น You, We, They, The dogs</p>
+            <div class="example">They <strong>are</strong> happy. / We <strong>are</strong> friends.</div>
+          </div>
+        </div>
+
+        <h3>🎮 กติกาการผจญภัย</h3>
+        <ul class="rule-list">
+          <li>วิ่งเข้าไปที่ <strong>ซุ้มประตูเวทมนตร์</strong> ด้านหน้าเพื่อเปิดคำถามประจำด่าน</li>
+          <li>ตอบถูก: รับ 10 คะแนน พร้อมเปิดทางสู่ด่านถัดไป</li>
+          <li><strong>ตอบผิด:</strong> ระบบจะแสดงเฉลย จากนั้นตัวละครจะกลับไปจุดเริ่มต้นด่าน 1 และคะแนนรอบปัจจุบันกลายเป็น 0</li>
+          <li>ตอบถูกติดต่อกันทั้ง 10 ด่านเพื่อรับคะแนนเต็ม 100 และรับประกาศนียบัตรเกียรติยศดิจิทัล!</li>
+        </ul>
+      </div>
+
+      <div class="lb-footer">
+        <button id="btn-help-ok" class="btn-primary-3d">
+          <span>เข้าใจแล้ว ลุยเลย!</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CDN Dependencies -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Configuration File (Separated Google Apps Script URL) -->
+  <script src="config.js"></script>
+
+  <!-- Main Game Engine -->
+  <script src="script.js"></script>
+</body>
+</html>
